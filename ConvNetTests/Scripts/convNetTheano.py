@@ -158,6 +158,7 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
 
     # allocate symbolic variables for the data
     index = T.lscalar()  # index to a [mini]batch
+    ep = T.scalar()  # index to a [mini]batch
 
     # start-snippet-1
     x = T.matrix('x')   # the data is presented as rasterized images
@@ -243,6 +244,7 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
 
     # create a list of gradients for all model parameters
     grads = T.grad(cost, params)
+    
 
     # train_model is a function that updates the model parameters by
     # SGD Since this model has many parameters, it would be tedious to
@@ -250,12 +252,12 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
     # create the updates list by automatically looping over all
     # (params[i], grads[i]) pairs.
     updates = [
-        (param_i, param_i - learning_rate * grad_i)
+        (param_i, param_i - learning_rate/ep**(1/2) * grad_i)
         for param_i, grad_i in zip(params, grads)
     ]
 
     train_model = theano.function(
-        [index],
+        [index,ep],
         cost,
         updates=updates,
         givens={
@@ -297,7 +299,7 @@ def evaluate_lenet5(learning_rate=0.1, n_epochs=200,
 
             if iter % 100 == 0:
                 print 'training @ iter = ', iter
-            cost_ij = train_model(minibatch_index)
+            cost_ij = train_model(minibatch_index,epoch)
 
             if (iter + 1) % validation_frequency == 0:
 
